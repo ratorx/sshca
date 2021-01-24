@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/rpc"
 
 	"github.com/ratorx/sshca/ca"
@@ -46,7 +47,7 @@ func (r *RPCFlags) makeClient() (*ca.Client, error) {
 }
 
 func (r *RPCFlags) makeLocalClient() (*ca.Client, error) {
-	left, right := NewBiPipe()
+	left, right := net.Pipe()
 
 	caRPCServer, err := ca.NewServer(r.CAPrivateKeyPath, r.CAPublicKeyPath)
 	if err != nil {
@@ -55,9 +56,9 @@ func (r *RPCFlags) makeLocalClient() (*ca.Client, error) {
 
 	server := rpc.NewServer()
 	server.RegisterName(ca.ServerName, &caRPCServer)
-	go server.ServeConn(&left)
+	go server.ServeConn(left)
 
-	return &ca.Client{Client: rpc.NewClient(&right)}, nil
+	return &ca.Client{Client: rpc.NewClient(right)}, nil
 }
 
 func (r *RPCFlags) makeRemoteClient() (*ca.Client, error) {
