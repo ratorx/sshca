@@ -45,7 +45,7 @@ func runCommand(cmd *exec.Cmd) error {
 func appendIfNotPresent(filename string, toAppend []byte) error {
 	contents, _ := ioutil.ReadFile(filename)
 
-	if strings.Contains(string(contents), string(toAppend)) {
+	if bytes.Contains(contents, toAppend) {
 		return nil
 	}
 
