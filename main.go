@@ -2,37 +2,19 @@ package main
 
 import (
 	"fmt"
-	"net"
-	"net/rpc"
 
 	"github.com/alexflint/go-arg"
-	"github.com/ratorx/sshca/ca"
 )
 
+// Command represents a top-level CLI argument
+type Command interface {
+	// Validate should check the flag values (the struct fields)
+	Validate() error
+	// Run executes the actual command
+	Run() error
+}
+
 // ServerCmd represents the command that runs the SSH CA server.
-type ServerCmd struct {
-	Addr string `arg:"positional,required" help:"TCP address to listen on"`
-	PrivateKeyPath string `arg:"-s,required" help:"SSH CA private key path"`
-	PublicKeyPath string `arg:"-p" help:"SSH CA public key path (optional, inferred from private key path)"`
-}
-
-func (s *ServerCmd) Run() error {
-	caRPCServer, err := ca.NewServer(s.PrivateKeyPath, s.PublicKeyPath)
-	if err != nil {
-		return fmt.Errorf("failed to local SSH CA RPC server: %w", err)
-	}
-
-	server := rpc.NewServer()
-	server.RegisterName(ca.ServerName, &caRPCServer)
-
-	listener, err := net.Listen("tcp", s.Addr)
-	if err != nil {
-		return fmt.Errorf("failed to listen on %s: %w", s.Addr, err)
-	}
-	server.Accept(listener)
-	return nil
-}
-
 type args struct {
 	Trust *TrustCmd `arg:"subcommand:trust" help:"trust the remote CA for user and host authentication"`
 	SignKey *SignUserCmd `arg:"subcommand:sign_user" help:"generate a user certficate for a public key"`
@@ -46,19 +28,28 @@ func (args) Description() string {
 
 func main() {
 	var args args
-	var err error
+	var cmd Command
 	p := arg.MustParse(&args)
 	switch {
 	case args.Trust != nil:
-		err = args.Trust.Run()
+		cmd = args.Trust
 	case args.SignKey != nil:
-		err = args.SignKey.Run()
+		cmd = args.SignKey
 	case args.SignHost != nil:
-		err = args.SignHost.Run()
+		cmd = args.SignHost
 	case args.Server != nil:
-		err = args.Server.Run()
+		cmd = args.Server
 	}
+
+	// Handle flag validation
+	err := cmd.Validate()
 	if err != nil {
 		p.Fail(err.Error())
+	}
+
+	err = cmd.Run()
+	if err != nil {
+		// TODO: Generate a nice error message
+		fmt.Println(err)
 	}
 }

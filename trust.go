@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/ratorx/sshca/sshd"
 )
 
 // TrustCmd represents the command that configures the host to trust the CA for
@@ -16,8 +18,8 @@ func (t *TrustCmd) trustAsUserCA(publicKey []byte) error {
 		return fmt.Errorf("failed to add key to trusted CAs: %w", err)
 	}
 
-	sshdConfig := SSHDConfig{ConfigPath: "/etc/ssh/sshd_config"}
-	sshdConfig.Set("TrustedUserCAKeys", "/etc/ssh/trusted_cas", true)
+	sshdConfig := sshd.Modifier{ConfigPath: "/etc/ssh/sshd_config"}
+	sshdConfig.SetUnique("TrustedUserCAKeys", "/etc/ssh/trusted_cas")
 	sshdConfig.Commit()
 	if err != nil {
 		return fmt.Errorf("unable set TrustedUserCAKeys: %w", err)
@@ -35,9 +37,14 @@ func (t *TrustCmd) trustAsHostCA(publicKey []byte) error {
 	return nil
 }
 
-// Run runs the TrustCmd command
+// Validate implementation for Command
+func (t *TrustCmd) Validate() error {
+	return t.RPCFlags.Validate()
+}
+
+// Run implementation for Command
 func (t *TrustCmd) Run() error {
-	client, err := t.RPCFlags.makeClient()
+	client, err := t.RPCFlags.MakeClient()
 	if err != nil {
 		return err
 	}
