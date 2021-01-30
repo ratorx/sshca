@@ -126,6 +126,10 @@ type SignReply struct {
 // SignPublicKey takes a SSH public key and signing options and signs it with
 // ssh-keygen
 func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
+	// Lock the mutex to prevent confusion when signing multiple requests
+	ca.sshKeygenLock.Lock()
+	defer ca.sshKeygenLock.Unlock()
+
 	// Verify the signing request
 	id, err := args.Identify()
 	if err != nil {
@@ -188,9 +192,6 @@ func (ca *Server) runSSHKeygen(args []string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	// Lock the mutex to prevent confusion when signing multiple requests
-	ca.sshKeygenLock.Lock()
-	defer ca.sshKeygenLock.Unlock()
 	if err := cmd.Run(); err != nil {
 		// Unwrapping the error is possibly dangerous (might expect to keep using
 		// stderr after mutex is unlocked). Explicitly convert to string before
