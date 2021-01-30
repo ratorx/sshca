@@ -1,11 +1,9 @@
-name: Release Go
+name: Release sshca
 
 on:
   # Triggers the workflow on tag
   push:
     tags: ['v*']
-
-  workflow_dispatch:
 
 jobs:
   create_release:
