@@ -8,6 +8,11 @@ import (
 	"regexp"
 )
 
+var hostkeyFailCases = [][]byte{
+	[]byte("No matching private key for certificate"),
+	[]byte("Could not load host certificate"),
+}
+
 // Represents a SSHD config modification. Replaces all matches of LineRegexp
 // with with the key value pair (in SSHD format). If no matches, it appends to
 // the end of the file.
@@ -37,8 +42,17 @@ type Modifier struct {
 
 func (s *Modifier) testConfig() error {
 	cmd := exec.Command("sshd", "-t")
-	_, err := checkedRun(cmd)
-	return err
+	_, stderr, err := checkedRun(cmd)
+	if err != nil {
+		return err
+	}
+	// Extra test cases - sshd -t returns 0 for these but they are problematic.
+	for _, failCase := range hostkeyFailCases {
+		if bytes.Contains(stderr, failCase) {
+			return fmt.Errorf("invalid hostkey in sshd config")
+		}
+	}
+	return nil
 }
 
 // Set adds a key value pair to the SSHD config. It will leave other config

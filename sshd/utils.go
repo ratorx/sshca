@@ -8,13 +8,13 @@ import (
 
 // checkedRun is a wrapper around exec.Cmd.Run which captures both Stdout and
 // Stderr and possibly returns them based on the exit code.
-func checkedRun(cmd *exec.Cmd) ([]byte, error) {
+func checkedRun(cmd *exec.Cmd) ([]byte, []byte, error) {
 	if cmd.Stdout != nil {
-		return nil, fmt.Errorf("Stdout can't be set")
+		return nil, nil, fmt.Errorf("Stdout can't be set")
 	}
 
 	if cmd.Stderr != nil {
-		return nil, fmt.Errorf("Stderr can't be set")
+		return nil, nil, fmt.Errorf("Stderr can't be set")
 	}
 
 	var stdout bytes.Buffer
@@ -25,13 +25,13 @@ func checkedRun(cmd *exec.Cmd) ([]byte, error) {
 
 	err := cmd.Run()
 	if err == nil {
-		return stdout.Bytes(), nil
+		return stdout.Bytes(), stderr.Bytes(), nil
 	}
 
 	switch err := err.(type) {
 	case *exec.ExitError:
-		return stdout.Bytes(), fmt.Errorf("command %q failed with exit code %v - stderr:\n%s", cmd, err.ExitCode(), stderr.Bytes())
+		return stdout.Bytes(), stderr.Bytes(), fmt.Errorf("command %q failed with exit code %v - stderr:\n%s", cmd, err.ExitCode(), stderr.Bytes())
 	default:
-		return stdout.Bytes(), fmt.Errorf("failed to execute %q: %w", cmd, err)
+		return stdout.Bytes(), stderr.Bytes(), fmt.Errorf("failed to execute %q: %w", cmd, err)
 	}
 }

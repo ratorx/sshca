@@ -10,7 +10,7 @@ import (
 // Lookup key in the effective SSHD config. This doesn't search the config path.
 // Instead it uses sshd -T to get the values of default paramters too.
 func Lookup(configPath string, key string) ([]string, error) {
-	out, err := checkedRun(exec.Command("sshd", "-T", "-f", configPath))
+	out, _, err := checkedRun(exec.Command("sshd", "-T", "-f", configPath))
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch effective config: %w", err)
 	}
