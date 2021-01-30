@@ -38,6 +38,8 @@ func main() {
 		cmd = args.SignHost
 	case args.Server != nil:
 		cmd = args.Server
+	default:
+		p.Fail("command is required")
 	}
 
 	// Handle flag validation
