@@ -21,7 +21,7 @@ In the special case where the client and server are on the same device, there is
 
 This script never reads or writes any private keys. The underlying certificate generation is handled by ssh-keygen.
 
-## Example Workflow (recommended)
+## Example Workflow
 
 On the host with access to CA:
 ```
@@ -35,7 +35,7 @@ ssh -L 5000:localhost:5000 example.com sshca sign_host -r localhost:5000
 ssh -L 5000:localhost:5000 example.com sshca sign_user -r localhost:5000 ~/.ssh/id_ed25519.pub
 ```
 
-Then whatever host and user keys can be signed using the other operations, using the same basic command. It's not recommended to expose the sshca server directly to the internet, but it might be necessary if SSH access is not available. It should be alright if you have to (especially for brief periods), because certificate generation requires user confirmation.
+The first couple of commands probably need root access because they modify SSHD config. It's not recommended to expose the sshca server directly to the internet, but it might be necessary if SSH access is not available. It should be alright if you have to (especially for brief periods), because certificate generation requires user confirmation.
 
 ## TODO
 * GitHub Actions integration
