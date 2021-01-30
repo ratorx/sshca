@@ -44,12 +44,16 @@ type SignHostCmd struct {
 }
 
 func (s *SignHostCmd) findPublicKeys() ([]string, error) {
-	filenames, err := sshd.Lookup(s.SSHDConfigPath, "HostKey")
+	privateKeys, err := sshd.Lookup(s.SSHDConfigPath, "HostKey")
 	if err != nil {
-		return nil, fmt.Errorf("failed to find public keys for host: %w", err)
+		return nil, fmt.Errorf("failed to find host keys for %w", err)
+	}
+	publicKeys := make([]string, 0, len(privateKeys))
+	for _, privateKey := range privateKeys {
+		publicKeys = append(publicKeys, privateKey + ".pub")
 	}
 
-	return filenames, nil
+	return publicKeys, nil
 }
 
 func (s *SignHostCmd) getPrincipals() ([]string, error) {
