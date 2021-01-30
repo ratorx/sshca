@@ -113,7 +113,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	defer os.RemoveAll(tempDir)
 
 	keyPath := filepath.Join(tempDir, "key.pub")
-	err = args.PublicKey.WriteFile(keyPath, 0600)
+	err = args.PublicKey.WriteFile(keyPath, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed write key to disk: %w", err)
 	}

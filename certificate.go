@@ -11,8 +11,10 @@ import (
 	"github.com/ratorx/sshca/ca"
 )
 
-var hostKeyRegexp = regexp.MustCompile("^ssh_host_([^_]+)_key.pub$")
-var userKeyRegexp = regexp.MustCompile("^id_([^_]+).pub$")
+var (
+	hostKeyRegexp = regexp.MustCompile("^ssh_host_([^_]+)_key.pub$")
+	userKeyRegexp = regexp.MustCompile("^id_([^_]+).pub$")
+)
 
 // keyIDFromPath attempts to extract the type of key from the path, falling back
 // the key's basename. The key is not inspected directly, because the actual
@@ -96,7 +98,7 @@ func generateCertificate(client *ca.Client, publicKeyPath string, principals []s
 	certPath := getCertificatePath(publicKeyPath)
 	fmt.Printf("writing certificate to %s\n", certPath)
 
-	err = reply.Certificate.WriteFile(certPath, 0600)
+	err = reply.Certificate.WriteFile(certPath, 0o600)
 	if err != nil {
 		return "", fmt.Errorf("failed to write certificate to disk: %w", err)
 	}

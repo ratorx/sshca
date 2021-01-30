@@ -15,10 +15,10 @@ type Command interface {
 }
 
 type args struct {
-	Trust *TrustCmd `arg:"subcommand:trust" help:"trust the remote CA for user and host authentication"`
+	Trust    *TrustCmd    `arg:"subcommand:trust" help:"trust the remote CA for user and host authentication"`
 	SignUser *SignUserCmd `arg:"subcommand:sign_user" help:"generate a user certficate for a public key"`
 	SignHost *SignHostCmd `arg:"subcommand:sign_host" help:"generate and configure certificates for all the host keys"`
-	Server *ServerCmd `arg:"subcommand:server" help:"run as the SSH CA RPC server"`
+	Server   *ServerCmd   `arg:"subcommand:server" help:"run as the SSH CA RPC server"`
 }
 
 func (args) Description() string {

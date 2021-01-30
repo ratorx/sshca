@@ -11,10 +11,10 @@ import (
 // RPCFlags are the flags required for RPC that are common across multiple
 // commands.
 type RPCFlags struct {
-	Local bool `arg:"-l" help:"run SSH CA operations on the client (exclusive with --remote)"`
+	Local            bool   `arg:"-l" help:"run SSH CA operations on the client (exclusive with --remote)"`
 	CAPrivateKeyPath string `arg:"-s,--ca-private" placeholder:"PRIVATE_KEY_PATH" help:"SSH CA private key path (only required when --local is set)"`
-	CAPublicKeyPath string `arg:"-p,--ca-public" placeholder:"PUBLIC_KEY_PATH" help:"SSH CA public key path (optional, only used when --local is set)"`
-	Remote string `arg:"-r" help:"remote server for SSH CA operations (exclusive with --local)"`
+	CAPublicKeyPath  string `arg:"-p,--ca-public" placeholder:"PUBLIC_KEY_PATH" help:"SSH CA public key path (optional, only used when --local is set)"`
+	Remote           string `arg:"-r" help:"remote server for SSH CA operations (exclusive with --local)"`
 }
 
 // Validate the flags and arguments that were passed into the command line.

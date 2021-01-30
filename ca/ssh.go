@@ -10,6 +10,7 @@ import (
 
 // CertificateType represents the type of the certificate in the request
 type CertificateType bool
+
 const (
 	// HostCertificate represents a SSH host certficate
 	HostCertificate CertificateType = true
@@ -39,7 +40,7 @@ func (ct CertificateType) sshKeygenArgs() []string {
 // PublicKey is a wrapper around an ssh.PublicKey which uses the file
 // representation, rather than the wire representation.
 type PublicKey struct {
-	key ssh.PublicKey
+	key  ssh.PublicKey
 	Data []byte
 }
 
@@ -57,7 +58,6 @@ func NewPublicKey(filename string) (*PublicKey, error) {
 func (p *PublicKey) WriteFile(filename string, perm os.FileMode) error {
 	return ioutil.WriteFile(filename, p.Data, perm)
 }
-
 
 // Fingerprint returns the SHA256 fingerprint of the public key
 func (p *PublicKey) Fingerprint() string {

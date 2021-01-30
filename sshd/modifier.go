@@ -18,18 +18,18 @@ var hostkeyFailCases = [][]byte{
 // the end of the file.
 type modification struct {
 	LineRegexp *regexp.Regexp
-	Key string
-	Value string
+	Key        string
+	Value      string
 }
 
 // Apply a modification to a byte array.
 func (m modification) Apply(b []byte) []byte {
-		toAppend := bytes.Join([][]byte{[]byte(m.Key), []byte(m.Value)}, []byte(" "))
-		if m.LineRegexp.Match(b) {
-			return m.LineRegexp.ReplaceAllLiteral(b, toAppend)
-		}
+	toAppend := bytes.Join([][]byte{[]byte(m.Key), []byte(m.Value)}, []byte(" "))
+	if m.LineRegexp.Match(b) {
+		return m.LineRegexp.ReplaceAllLiteral(b, toAppend)
+	}
 
-		return bytes.Join([][]byte{bytes.TrimRight(b, "\n"), toAppend}, []byte("\n"))
+	return bytes.Join([][]byte{bytes.TrimRight(b, "\n"), toAppend}, []byte("\n"))
 }
 
 // Modifier provides a safe wrapper to modify SSHD configuration. Changes are
@@ -95,7 +95,7 @@ func (s *Modifier) Commit() error {
 		return nil
 	}
 
-	err = ioutil.WriteFile(s.ConfigPath, final, 0644)
+	err = ioutil.WriteFile(s.ConfigPath, final, 0o644)
 	if err != nil {
 		return fmt.Errorf("failed to modify SSHD config: %w", err)
 	}
@@ -104,7 +104,7 @@ func (s *Modifier) Commit() error {
 	if err != nil {
 		cause := fmt.Errorf("verification of modified SSHD config failed: %w", err)
 
-		err := ioutil.WriteFile(s.ConfigPath, original, 0644)
+		err := ioutil.WriteFile(s.ConfigPath, original, 0o644)
 		if err != nil {
 			return fmt.Errorf(
 				"%v\n%v",

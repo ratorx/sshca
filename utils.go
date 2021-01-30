@@ -28,7 +28,7 @@ func appendIfNotPresent(filename string, toAppend []byte) error {
 		return nil
 	}
 
-	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0o644)
 	if err != nil {
 		return fmt.Errorf("unable to open %s for appending: %w", filename, err)
 	}
@@ -40,4 +40,3 @@ func appendIfNotPresent(filename string, toAppend []byte) error {
 
 	return nil
 }
-

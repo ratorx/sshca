@@ -14,8 +14,8 @@ import (
 // public key.
 type SignUserCmd struct {
 	RPCFlags
-	Principals CommaSeparatedList `arg:"-n,required" help:"principals to authorise the key for (comma-separated)"`
-	PublicKeyPath string `arg:"positional,required" help:"path to the SSH public key"`
+	Principals    CommaSeparatedList `arg:"-n,required" help:"principals to authorise the key for (comma-separated)"`
+	PublicKeyPath string             `arg:"positional,required" help:"path to the SSH public key"`
 }
 
 // Validate implementation for Command
@@ -39,8 +39,8 @@ func (s *SignUserCmd) Run() error {
 // principals.
 type SignHostCmd struct {
 	RPCFlags
-	SSHDConfigPath string `default:"/etc/ssh/sshd_config" help:"path to the sshd_config"`
-	Principals CommaSeparatedList `arg:"-n" help:"extra principals for the host keys (comma-separated)"`
+	SSHDConfigPath string             `default:"/etc/ssh/sshd_config" help:"path to the sshd_config"`
+	Principals     CommaSeparatedList `arg:"-n" help:"extra principals for the host keys (comma-separated)"`
 }
 
 func (s *SignHostCmd) findPublicKeys() ([]string, error) {
@@ -50,7 +50,7 @@ func (s *SignHostCmd) findPublicKeys() ([]string, error) {
 	}
 	publicKeys := make([]string, 0, len(privateKeys))
 	for _, privateKey := range privateKeys {
-		publicKeys = append(publicKeys, privateKey + ".pub")
+		publicKeys = append(publicKeys, privateKey+".pub")
 	}
 
 	return publicKeys, nil
@@ -63,7 +63,7 @@ func (s *SignHostCmd) getPrincipals() ([]string, error) {
 	}
 
 	// Use a map to put unique principals into the final slice
-	principals := make(map[string]bool, 2 + len(s.Principals.Items))
+	principals := make(map[string]bool, 2+len(s.Principals.Items))
 	principals[hostname] = true
 	principals[strings.Split(hostname, ".")[0]] = true
 	for _, principal := range s.Principals.Items {
