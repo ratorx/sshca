@@ -1,0 +1,59 @@
+name: Release Go
+
+on:
+  # Triggers the workflow on tag
+  push:
+    tags: ['v*']
+
+  workflow_dispatch:
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:         
+      - id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+  
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ darwin,openbsd,linux ]
+        arch: [ amd64 ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      # Borrowed from https://markphelps.me/2019/11/speed-up-your-go-builds-with-actions-cache/
+      - uses: actions/cache@v2.1.3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-${{ matrix.os }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+
+      - name: build binary for ${{ matrix.os }} ${{ matrix.arch }}
+        run: go build -o "sshca.$GOOS.$GOARCH" .
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+      
+      - name: upload sshca.${{ matrix.os }}.${{ matrix.arch }}
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: sshca.${{ matrix.os }}.${{ matrix.arch }}
+          asset_name: sshca.${{ matrix.os }}.${{ matrix.arch }}
+          asset_content_type: application/octet-stream
+          
+      
+      
