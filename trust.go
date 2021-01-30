@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/ratorx/sshca/ca"
 	"github.com/ratorx/sshca/sshd"
 )
 
@@ -12,8 +13,8 @@ type TrustCmd struct {
 	RPCFlags
 }
 
-func (t *TrustCmd) trustAsUserCA(publicKey []byte) error {
-	err := appendIfNotPresent("/etc/ssh/trusted_cas", publicKey)
+func (t *TrustCmd) trustAsUserCA(publicKey *ca.PublicKey) error {
+	err := appendIfNotPresent("/etc/ssh/trusted_cas", publicKey.Marshal())
 	if err != nil {
 		return fmt.Errorf("failed to add key to trusted CAs: %w", err)
 	}
@@ -28,7 +29,7 @@ func (t *TrustCmd) trustAsUserCA(publicKey []byte) error {
 	return nil
 }
 
-func (t *TrustCmd) trustAsHostCA(publicKey []byte) error {
+func (t *TrustCmd) trustAsHostCA(publicKey *ca.PublicKey) error {
 	err := appendIfNotPresent("/etc/ssh_known_hosts", []byte(fmt.Sprintf("@cert-authority * %s", publicKey)))
 	if err != nil {
 		return fmt.Errorf("failed to add key to SSH known hosts")

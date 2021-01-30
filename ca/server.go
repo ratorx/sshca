@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-
-	"golang.org/x/crypto/ssh"
 )
 
 // Server encapsulates a SSH CA and provides a net/rpc compatible type
@@ -24,7 +22,7 @@ type Server struct {
 	// PublicKey is the public key of the CA.
 	// This is read into the server on startup in order to respond to
 	// GetCAPublicKey.
-	PublicKey []byte
+	PublicKey *PublicKey
 	// True iff confirmation should be skipped when responding to SignPublicKey.
 	SkipConfirmation bool
 	// Signing passes through standard IO to ssh-keygen (for password etc.)
@@ -50,40 +48,12 @@ func NewServer(privateKeyPath string, publicKeyPath string, skipConfirmation boo
 		publicKeyPath = privateKeyPath + ".pub"
 	}
 
-	publicKey, err := ioutil.ReadFile(publicKeyPath)
+	publicKey, err := NewPublicKey(publicKeyPath)
 	if err != nil {
 		return Server{}, fmt.Errorf("failed to read public key at %s: %w", publicKeyPath, err)
 	}
 
 	return Server{privateKeyPath, publicKey, skipConfirmation, &sync.Mutex{}}, nil
-}
-
-// CertificateType represents the type of the certificate in the request
-type CertificateType bool
-const (
-	// HostCertificate represents a SSH host certficate
-	HostCertificate CertificateType = true
-	// UserCertificate represents a SSH user certificate
-	UserCertificate CertificateType = false
-)
-
-// String implementation for Stringer
-func (ct CertificateType) String() string {
-	switch ct {
-	case HostCertificate:
-		return "host"
-	default:
-		return "user"
-	}
-}
-
-func (ct CertificateType) sshKeygenArgs() []string {
-	switch ct {
-	case HostCertificate:
-		return []string{"-h"}
-	default:
-		return []string{}
-	}
 }
 
 // SignArgs represents the options available (or at least an important
@@ -97,30 +67,26 @@ type SignArgs struct {
 	// Principals is passed as the argument to -n to ssh-keygen.
 	Principals []string
 	// PublicKey contains the regular SSH public key that is being signed.
-	PublicKey []byte
+	PublicKey *PublicKey
 }
 
 // Identify identifies a SignPublicKey request. It generates a string version of
 // the request parameters and the key fingerprint. As a side-effect, this also
 // validates the public key.
-func (args *SignArgs) Identify() (string, error) {
-	publicKey, _, _, _, err := ssh.ParseAuthorizedKey(args.PublicKey)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse public key: %w", err)
-	}
+func (args *SignArgs) Identify() string {
 	return fmt.Sprintf(
 		"make %s certficate for %s key (fingerprint %s) for %s",
 		args.CertificateType,
-		publicKey.Type(),
-		ssh.FingerprintSHA256(publicKey),
+		args.PublicKey.Type(),
+		args.PublicKey.Fingerprint(),
 		strings.Join(args.Principals, ","),
-	), nil
+	)
 }
 
 // SignReply represents the reply from SignPublicKey
 type SignReply struct {
 	// Certificate contains the signed SSH certificate.
-	Certificate []byte
+	Certificate *PublicKey
 }
 
 // SignPublicKey takes a SSH public key and signing options and signs it with
@@ -131,10 +97,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	defer ca.sshKeygenLock.Unlock()
 
 	// Verify the signing request
-	id, err := args.Identify()
-	if err != nil {
-		return fmt.Errorf("invalid public key: %w", err)
-	}
+	id := args.Identify()
 	fmt.Println(id)
 	if err := ca.confirmRequest(); err != nil {
 		return fmt.Errorf("failed to confirm request: %w", err)
@@ -150,7 +113,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	defer os.RemoveAll(tempDir)
 
 	keyPath := filepath.Join(tempDir, "key.pub")
-	err = ioutil.WriteFile(keyPath, ca.PublicKey, 0600)
+	err = args.PublicKey.WriteFile(keyPath, 0600)
 	if err != nil {
 		return fmt.Errorf("failed write key to disk: %w", err)
 	}
@@ -162,7 +125,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	// Add a newline before next prompt
 	fmt.Println()
 
-	certificate, err := ioutil.ReadFile(filepath.Join(tempDir, "key-cert.pub"))
+	certificate, err := NewPublicKey(filepath.Join(tempDir, "key-cert.pub"))
 	if err != nil {
 		return fmt.Errorf("failed to read certificate from disk: %w", err)
 	}
@@ -220,7 +183,7 @@ func (ca *Server) confirmRequest() error {
 // PublicKeyReply encapsulates the public key of the CA and represents the
 // value of GetCAPublicKey.
 type PublicKeyReply struct {
-	CAPublicKey []byte
+	CAPublicKey *PublicKey
 }
 
 // GetCAPublicKey returns the public key of the trusted CA

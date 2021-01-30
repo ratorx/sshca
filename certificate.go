@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -79,15 +78,12 @@ func generateCertificate(client *ca.Client, publicKeyPath string, principals []s
 		return "", fmt.Errorf("failed to generate certificate identity: %w", err)
 	}
 
-	args.PublicKey, err = ioutil.ReadFile(publicKeyPath)
+	args.PublicKey, err = ca.NewPublicKey(publicKeyPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read public key at %s: %w", publicKeyPath, err)
 	}
 
-	id, err := args.Identify()
-	if err != nil {
-		return "", fmt.Errorf("invalid public key: %w", err)
-	}
+	id := args.Identify()
 	if printRequest {
 		fmt.Println(id)
 	}
@@ -100,7 +96,7 @@ func generateCertificate(client *ca.Client, publicKeyPath string, principals []s
 	certPath := getCertificatePath(publicKeyPath)
 	fmt.Printf("writing certificate to %s\n", certPath)
 
-	err = ioutil.WriteFile(certPath, reply.Certificate, 0600)
+	err = reply.Certificate.WriteFile(certPath, 0600)
 	if err != nil {
 		return "", fmt.Errorf("failed to write certificate to disk: %w", err)
 	}
