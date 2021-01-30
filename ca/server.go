@@ -159,6 +159,8 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	if err != nil {
 		return err
 	}
+	// Add a newline before next prompt
+	fmt.Println()
 
 	certificate, err := ioutil.ReadFile(filepath.Join(tempDir, "key-cert.pub"))
 	if err != nil {
@@ -209,6 +211,7 @@ func (ca *Server) confirmRequest() error {
 	if ca.SkipConfirmation {
 		return nil
 	}
+	fmt.Print("press Enter to confirm (or Ctrl-C to exit)")
 	reader := bufio.NewReader(os.Stdin)
 	_, err := reader.ReadString('\n')
 	return err
@@ -222,6 +225,7 @@ type PublicKeyReply struct {
 
 // GetCAPublicKey returns the public key of the trusted CA
 func (ca *Server) GetCAPublicKey(args struct{}, reply *PublicKeyReply) error {
+	fmt.Print("get CA public key\n\n")
 	reply.CAPublicKey = ca.PublicKey
 	return nil
 }
