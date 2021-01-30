@@ -26,6 +26,7 @@ func (t *TrustCmd) trustAsUserCA(publicKey *ca.PublicKey) error {
 		return fmt.Errorf("unable set TrustedUserCAKeys: %w", err)
 	}
 
+	fmt.Printf("trusted public key (fingerprint %s) as authority for user authentication\n", publicKey.Fingerprint())
 	return nil
 }
 
@@ -35,6 +36,7 @@ func (t *TrustCmd) trustAsHostCA(publicKey *ca.PublicKey) error {
 		return fmt.Errorf("failed to add key to SSH known hosts")
 	}
 
+	fmt.Printf("trusted public key (fingerprint %s) as authority for host authentication\n", publicKey.Fingerprint())
 	return nil
 }
 

@@ -157,6 +157,7 @@ func (ca *Server) runSSHKeygen(args []string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	fmt.Println("ssh-keygen output:")
 	if err := cmd.Run(); err != nil {
 		// Unwrapping the error is possibly dangerous (might expect to keep using
 		// stderr after mutex is unlocked). Explicitly convert to string before
