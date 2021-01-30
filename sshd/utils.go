@@ -6,6 +6,8 @@ import (
 	"os/exec"
 )
 
+// checkedRun is a wrapper around exec.Cmd.Run which captures both Stdout and
+// Stderr and possibly returns them based on the exit code.
 func checkedRun(cmd *exec.Cmd) ([]byte, error) {
 	if cmd.Stdout != nil {
 		return nil, fmt.Errorf("Stdout can't be set")

@@ -37,7 +37,7 @@ func (r *RPCFlags) Validate() error {
 }
 
 // MakeClient creates a new ca.Client based on the RPC Flags. It either returns
-// a local client (where the server is run in a separate goroutine), or a remote
+// a local client (where the server is run in a goroutine), or a remote
 // client that is connected to a TCP RPC server.
 func (r *RPCFlags) MakeClient() (*ca.Client, error) {
 	err := r.Validate()

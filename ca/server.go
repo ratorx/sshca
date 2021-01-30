@@ -67,6 +67,7 @@ const (
 	UserCertificate CertificateType = false
 )
 
+// String implementation for Stringer
 func (ct CertificateType) String() string {
 	switch ct {
 	case HostCertificate:
@@ -134,6 +135,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	if err := ca.confirmRequest(); err != nil {
 		return fmt.Errorf("failed to confirm request: %w", err)
 	}
+
 	// Prepare key for ssh-keygen, which reads files on disk
 	// It's probably possible to pass in the key to stdin, but that makes passing
 	// user input to ssh-keygen more complex.
@@ -163,6 +165,8 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	return nil
 }
 
+// getSSHKeygenArgs builds the command line for sshKeygen by converting the
+// various arguments to their corresponding ssh-keygen flags.
 func (ca *Server) getSSHKeygenArgs(args SignArgs, keyPath string) []string {
 	cmdArgs := []string{
 		"-I", args.Identity,
@@ -176,6 +180,8 @@ func (ca *Server) getSSHKeygenArgs(args SignArgs, keyPath string) []string {
 	return cmdArgs
 }
 
+// runSSHKeygen runs ssh-keygen after giving it access to the server's standard
+// IO, because it might be required for authentication.
 func (ca *Server) runSSHKeygen(args []string) error {
 	cmd := exec.Command("ssh-keygen", args...)
 	cmd.Stdin = os.Stdin
@@ -194,6 +200,10 @@ func (ca *Server) runSSHKeygen(args []string) error {
 	return nil
 }
 
+// confirmRequest waits for user confirmation for certificate signing. Any input
+// followed by a newline is considered confirmation. Perhaps the error message
+// for the client could be made nicer if it looked at the input. Currently, the
+// client gets an EOF because the Ctrl-C shuts down the server.
 func (ca *Server) confirmRequest() error {
 	if ca.SkipConfirmation {
 		return nil

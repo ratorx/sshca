@@ -15,6 +15,11 @@ import (
 var hostKeyRegexp = regexp.MustCompile("^ssh_host_([^_]+)_key.pub$")
 var userKeyRegexp = regexp.MustCompile("^id_([^_]+).pub$")
 
+// keyIDFromPath attempts to extract the type of key from the path, falling back
+// the key's basename. The key is not inspected directly, because the actual
+// type of key is not useful as an ID if it's not the default key of that type.
+// E.g. id_rsa.pub can be well-identified as rsa, but gcloud.pub can't, even if
+// the underlying key is rsa.
 func keyIDFromPath(keyPath string) string {
 	keyFile := path.Base(keyPath)
 
@@ -31,7 +36,8 @@ func keyIDFromPath(keyPath string) string {
 	return strings.TrimSuffix(keyFile, ".pub")
 }
 
-
+// getCertificateIdentity generates the identity of the certificate based on the
+// host (and user, depending on the certificate) making the request.
 func getCertificateIdentity(keyPath string, certType ca.CertificateType) (string, error) {
 	certIdentityComponents := make([]string, 0, 3)
 
@@ -41,7 +47,7 @@ func getCertificateIdentity(keyPath string, certType ca.CertificateType) (string
 	}
 	certIdentityComponents = append(certIdentityComponents, hostname)
 
-	// Prepend username if it's a user certificate
+	// Append username if it's a user certificate
 	if !certType {
 		userStruct, err := user.Current()
 		if err != nil {
