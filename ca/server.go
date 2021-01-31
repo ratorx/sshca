@@ -5,11 +5,52 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
 )
+
+// SignArgs represents the options available (or at least an important
+// subset of them) when generating the command line.
+type SignArgs struct {
+	// Identity is passed as the argument to -I in ssh-keygen.
+	Identity string
+	// CertificateType represents the type of certificate to be generated. If it's a host
+	// certificate, then -h is passed to ssh-keygen.
+	CertificateType CertificateType
+	// Principals is passed as the argument to -n to ssh-keygen.
+	Principals []string
+	// PublicKey contains the regular SSH public key that is being signed.
+	PublicKey *PublicKey
+}
+
+// String identifies a SignPublicKey request. It generates a string version of
+// the request parameters and the key fingerprint. As a side-effect, this also
+// validates the public key.
+func (args *SignArgs) String() string {
+	return fmt.Sprintf(
+		"make %s certficate for %s key (fingerprint %s) for %s",
+		args.CertificateType,
+		args.PublicKey.Type(),
+		args.PublicKey.Fingerprint(),
+		strings.Join(args.Principals, ","),
+	)
+}
+
+// Args converts SignArgs to ssh-keygen args
+func (args *SignArgs) Args() []string {
+	cmdArgs := []string{
+		"-I", args.Identity,
+		"-n", strings.Join(args.Principals, ","),
+	}
+	return append(cmdArgs, args.CertificateType.Args()...)
+}
+
+// SignReply represents the reply from SignPublicKey
+type SignReply struct {
+	// Certificate contains the signed SSH certificate.
+	Certificate *PublicKey
+}
 
 // Server encapsulates a SSH CA and provides a net/rpc compatible type
 // signature. It exposes functions to sign public keys and return the public CA
@@ -55,40 +96,6 @@ func NewServer(privateKeyPath string, publicKeyPath string, skipConfirmation boo
 
 	return Server{privateKeyPath, publicKey, skipConfirmation, &sync.Mutex{}}, nil
 }
-
-// SignArgs represents the options available (or at least an important
-// subset of them) when generating the command line.
-type SignArgs struct {
-	// Identity is passed as the argument to -I in ssh-keygen.
-	Identity string
-	// CertificateType represents the type of certificate to be generated. If it's a host
-	// certificate, then -h is passed to ssh-keygen.
-	CertificateType CertificateType
-	// Principals is passed as the argument to -n to ssh-keygen.
-	Principals []string
-	// PublicKey contains the regular SSH public key that is being signed.
-	PublicKey *PublicKey
-}
-
-// Identify identifies a SignPublicKey request. It generates a string version of
-// the request parameters and the key fingerprint. As a side-effect, this also
-// validates the public key.
-func (args *SignArgs) Identify() string {
-	return fmt.Sprintf(
-		"make %s certficate for %s key (fingerprint %s) for %s",
-		args.CertificateType,
-		args.PublicKey.Type(),
-		args.PublicKey.Fingerprint(),
-		strings.Join(args.Principals, ","),
-	)
-}
-
-// SignReply represents the reply from SignPublicKey
-type SignReply struct {
-	// Certificate contains the signed SSH certificate.
-	Certificate *PublicKey
-}
-
 // SignPublicKey takes a SSH public key and signing options and signs it with
 // ssh-keygen
 func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
@@ -97,8 +104,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 	defer ca.sshKeygenLock.Unlock()
 
 	// Verify the signing request
-	id := args.Identify()
-	fmt.Println(id)
+	fmt.Println(args)
 	if err := ca.confirmRequest(); err != nil {
 		return fmt.Errorf("failed to confirm request: %w", err)
 	}
@@ -118,7 +124,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 		return fmt.Errorf("failed write key to disk: %w", err)
 	}
 	sshKeygenArgs := ca.getSSHKeygenArgs(args, keyPath)
-	err = ca.runSSHKeygen(sshKeygenArgs)
+	err = runSSHKeygen(sshKeygenArgs)
 	if err != nil {
 		return err
 	}
@@ -137,34 +143,8 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 // getSSHKeygenArgs builds the command line for sshKeygen by converting the
 // various arguments to their corresponding ssh-keygen flags.
 func (ca *Server) getSSHKeygenArgs(args SignArgs, keyPath string) []string {
-	cmdArgs := []string{
-		"-I", args.Identity,
-		"-s", ca.PrivateKeyPath,
-		"-n", strings.Join(args.Principals, ","),
-	}
-
-	cmdArgs = append(cmdArgs, args.CertificateType.sshKeygenArgs()...)
-	cmdArgs = append(cmdArgs, keyPath)
-
-	return cmdArgs
-}
-
-// runSSHKeygen runs ssh-keygen after giving it access to the server's standard
-// IO, because it might be required for authentication.
-func (ca *Server) runSSHKeygen(args []string) error {
-	cmd := exec.Command("ssh-keygen", args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	fmt.Println("ssh-keygen output:")
-	if err := cmd.Run(); err != nil {
-		// Unwrapping the error is possibly dangerous (might expect to keep using
-		// stderr after mutex is unlocked). Explicitly convert to string before
-		// returning. May not be strictly necessary, but I CBA to test and find out.
-		return fmt.Errorf("failed to sign key (see server for extra details): %s", err.Error())
-	}
-	return nil
+	argsSlice := args.Args()
+	return append(argsSlice, "-s", ca.PrivateKeyPath, keyPath)
 }
 
 // confirmRequest waits for user confirmation for certificate signing. Any input

@@ -18,7 +18,7 @@ const (
 	UserCertificate CertificateType = false
 )
 
-// String implementation for Stringer
+// String implementation for Stringer.
 func (ct CertificateType) String() string {
 	switch ct {
 	case HostCertificate:
@@ -28,7 +28,8 @@ func (ct CertificateType) String() string {
 	}
 }
 
-func (ct CertificateType) sshKeygenArgs() []string {
+// Args converts the CertificateType into ssh-keygen args.
+func (ct CertificateType) Args() []string {
 	switch ct {
 	case HostCertificate:
 		return []string{"-h"}
@@ -44,7 +45,7 @@ type PublicKey struct {
 	Data []byte
 }
 
-// NewPublicKey creates a new PublicKey from a file
+// NewPublicKey creates a new PublicKey from a file.
 func NewPublicKey(filename string) (*PublicKey, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -54,18 +55,18 @@ func NewPublicKey(filename string) (*PublicKey, error) {
 	return publicKey, publicKey.parse()
 }
 
-// WriteFile writes the PublicKey to a file
+// WriteFile writes the PublicKey to a file.
 func (p *PublicKey) WriteFile(filename string, perm os.FileMode) error {
 	return ioutil.WriteFile(filename, p.Data, perm)
 }
 
-// Fingerprint returns the SHA256 fingerprint of the public key
+// Fingerprint returns the SHA256 fingerprint of the public key.
 func (p *PublicKey) Fingerprint() string {
 	p.mustParse()
 	return ssh.FingerprintSHA256(p.key)
 }
 
-// Type returns the algorithm of the public key
+// Type returns the algorithm of the public key.
 func (p *PublicKey) Type() string {
 	p.mustParse()
 	return p.key.Type()
