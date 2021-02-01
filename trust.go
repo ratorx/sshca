@@ -31,7 +31,7 @@ func (t *TrustCmd) trustAsUserCA(publicKey *ca.PublicKey) error {
 }
 
 func (t *TrustCmd) trustAsHostCA(publicKey *ca.PublicKey) error {
-	err := appendIfNotPresent("/etc/ssh_known_hosts", []byte(fmt.Sprintf("@cert-authority * %s", publicKey)))
+	err := appendIfNotPresent("/etc/ssh/ssh_known_hosts", []byte(fmt.Sprintf("@cert-authority * %s", publicKey)))
 	if err != nil {
 		return fmt.Errorf("failed to add key to SSH known hosts")
 	}
