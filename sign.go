@@ -98,7 +98,7 @@ func (s SignHostCmd) Run() error {
 	if err != nil {
 		return fmt.Errorf("failed to get find public keys: %w", err)
 	}
-	fmt.Printf("found %v host keys", len(publicKeyPaths))
+	fmt.Printf("found %v host keys\n", len(publicKeyPaths))
 
 	sshdModifier := sshd.Modifier{ConfigPath: s.SSHDConfigPath}
 	for _, keyPath := range publicKeyPaths {
