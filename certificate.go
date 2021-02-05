@@ -85,9 +85,8 @@ func generateCertificate(client *ca.Client, publicKeyPath string, principals []s
 		return "", fmt.Errorf("failed to read public key at %s: %w", publicKeyPath, err)
 	}
 
-	id := args.Identify()
 	if printRequest {
-		fmt.Println(id)
+		fmt.Println(args)
 	}
 
 	reply, err := client.SignPublicKey(args)
