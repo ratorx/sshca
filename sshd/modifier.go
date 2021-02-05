@@ -40,7 +40,7 @@ type Modifier struct {
 	modifications []modification
 }
 
-func (s *Modifier) testConfig() error {
+func (s Modifier) testConfig() error {
 	cmd := exec.Command("sshd", "-t")
 	_, stderr, err := checkedRun(cmd)
 	if err != nil {

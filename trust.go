@@ -13,7 +13,7 @@ type TrustCmd struct {
 	RPCFlags
 }
 
-func (t *TrustCmd) trustAsUserCA(publicKey *ca.PublicKey) error {
+func (t TrustCmd) trustAsUserCA(publicKey *ca.PublicKey) error {
 	err := appendIfNotPresent("/etc/ssh/trusted_cas", publicKey.Marshal())
 	if err != nil {
 		return fmt.Errorf("failed to add key to trusted CAs: %w", err)
@@ -30,10 +30,10 @@ func (t *TrustCmd) trustAsUserCA(publicKey *ca.PublicKey) error {
 	return nil
 }
 
-func (t *TrustCmd) trustAsHostCA(publicKey *ca.PublicKey) error {
+func (t TrustCmd) trustAsHostCA(publicKey *ca.PublicKey) error {
 	err := appendIfNotPresent("/etc/ssh/ssh_known_hosts", []byte(fmt.Sprintf("@cert-authority * %s", publicKey)))
 	if err != nil {
-		return fmt.Errorf("failed to add key to SSH known hosts")
+		return fmt.Errorf("failed to add key to SSH known hosts: %w", err)
 	}
 
 	fmt.Printf("trusted public key (fingerprint %s) as authority for host authentication\n", publicKey.Fingerprint())
@@ -41,12 +41,12 @@ func (t *TrustCmd) trustAsHostCA(publicKey *ca.PublicKey) error {
 }
 
 // Validate implementation for Command
-func (t *TrustCmd) Validate() error {
+func (t TrustCmd) Validate() error {
 	return t.RPCFlags.Validate()
 }
 
 // Run implementation for Command
-func (t *TrustCmd) Run() error {
+func (t TrustCmd) Run() error {
 	client, err := t.RPCFlags.MakeClient()
 	if err != nil {
 		return err

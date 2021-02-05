@@ -19,12 +19,12 @@ type ServerCmd struct {
 }
 
 // Validate implementation for Command
-func (s *ServerCmd) Validate() error {
+func (s ServerCmd) Validate() error {
 	return nil
 }
 
 // Run implementation for Command
-func (s *ServerCmd) Run() error {
+func (s ServerCmd) Run() error {
 	caRPCServer, err := ca.NewServer(s.PrivateKeyPath, s.PublicKeyPath, s.SkipConfirmation)
 	if err != nil {
 		return fmt.Errorf("failed to initialize SSH CA RPC server: %w", err)

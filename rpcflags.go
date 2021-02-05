@@ -20,7 +20,7 @@ type RPCFlags struct {
 // Validate the flags and arguments that were passed into the command line.
 // Ensures that either local or remote operation is selected, and the
 // appropriate required flags for each are set.
-func (r *RPCFlags) Validate() error {
+func (r RPCFlags) Validate() error {
 	if r.Local && r.Remote != "" {
 		return fmt.Errorf("both --local and --remote cannot be used at the same time")
 	}
@@ -39,7 +39,7 @@ func (r *RPCFlags) Validate() error {
 // MakeClient creates a new ca.Client based on the RPC Flags. It either returns
 // a local client (where the server is run in a goroutine), or a remote
 // client that is connected to a TCP RPC server.
-func (r *RPCFlags) MakeClient() (*ca.Client, error) {
+func (r RPCFlags) MakeClient() (*ca.Client, error) {
 	err := r.Validate()
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (r *RPCFlags) MakeClient() (*ca.Client, error) {
 	return r.makeRemoteClient()
 }
 
-func (r *RPCFlags) makeLocalClient() (*ca.Client, error) {
+func (r RPCFlags) makeLocalClient() (*ca.Client, error) {
 	left, right := net.Pipe()
 
 	caRPCServer, err := ca.NewServer(r.CAPrivateKeyPath, r.CAPublicKeyPath, true)
@@ -67,7 +67,7 @@ func (r *RPCFlags) makeLocalClient() (*ca.Client, error) {
 	return &ca.Client{Client: rpc.NewClient(right)}, nil
 }
 
-func (r *RPCFlags) makeRemoteClient() (*ca.Client, error) {
+func (r RPCFlags) makeRemoteClient() (*ca.Client, error) {
 	client, err := rpc.Dial("tcp", r.Remote)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to server at %s: %w", r.Remote, err)

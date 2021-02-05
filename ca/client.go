@@ -17,14 +17,14 @@ type Client struct {
 }
 
 // GetCAPublicKey represents the GetCAPublicKey RPC call
-func (c *Client) GetCAPublicKey() (*PublicKeyReply, error) {
+func (c Client) GetCAPublicKey() (*PublicKeyReply, error) {
 	publicKey := new(PublicKeyReply)
 	err := c.Call(getCAPublicKeyEndpoint, struct{}{}, publicKey)
 	return publicKey, err
 }
 
 // SignPublicKey represents the SignPublicKey RPC call
-func (c *Client) SignPublicKey(args SignArgs) (*SignReply, error) {
+func (c Client) SignPublicKey(args SignArgs) (*SignReply, error) {
 	signReply := new(SignReply)
 	err := c.Call(signPublicKeyEndpoint, args, signReply)
 	return signReply, err

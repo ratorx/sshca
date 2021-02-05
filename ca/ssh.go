@@ -56,7 +56,7 @@ func NewPublicKey(filename string) (*PublicKey, error) {
 }
 
 // WriteFile writes the PublicKey to a file.
-func (p *PublicKey) WriteFile(filename string, perm os.FileMode) error {
+func (p PublicKey) WriteFile(filename string, perm os.FileMode) error {
 	return ioutil.WriteFile(filename, p.Data, perm)
 }
 
@@ -73,13 +73,13 @@ func (p *PublicKey) Type() string {
 }
 
 // Marshal returns the underlying bytes of the public key.
-func (p *PublicKey) Marshal() []byte {
+func (p PublicKey) Marshal() []byte {
 	ret := make([]byte, len(p.Data))
 	copy(ret, p.Data)
 	return ret
 }
 
-func (p *PublicKey) String() string {
+func (p PublicKey) String() string {
 	return string(p.Data)
 }
 

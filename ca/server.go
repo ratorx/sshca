@@ -27,7 +27,7 @@ type SignArgs struct {
 // String identifies a SignPublicKey request. It generates a string version of
 // the request parameters and the key fingerprint. As a side-effect, this also
 // validates the public key.
-func (args *SignArgs) String() string {
+func (args SignArgs) String() string {
 	return fmt.Sprintf(
 		"make %s certficate for %s key (fingerprint %s) for %s",
 		args.CertificateType,
@@ -38,7 +38,7 @@ func (args *SignArgs) String() string {
 }
 
 // Args converts SignArgs to ssh-keygen args
-func (args *SignArgs) Args() []string {
+func (args SignArgs) Args() []string {
 	cmdArgs := []string{
 		"-I", args.Identity,
 		"-n", strings.Join(args.Principals, ","),
@@ -142,7 +142,7 @@ func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {
 
 // getSSHKeygenArgs builds the command line for sshKeygen by converting the
 // various arguments to their corresponding ssh-keygen flags.
-func (ca *Server) getSSHKeygenArgs(args SignArgs, keyPath string) []string {
+func (ca Server) getSSHKeygenArgs(args SignArgs, keyPath string) []string {
 	argsSlice := args.Args()
 	return append(argsSlice, "-s", ca.PrivateKeyPath, keyPath)
 }
@@ -151,7 +151,7 @@ func (ca *Server) getSSHKeygenArgs(args SignArgs, keyPath string) []string {
 // followed by a newline is considered confirmation. Perhaps the error message
 // for the client could be made nicer if it looked at the input. Currently, the
 // client gets an EOF because the Ctrl-C shuts down the server.
-func (ca *Server) confirmRequest() error {
+func (ca Server) confirmRequest() error {
 	if ca.SkipConfirmation {
 		return nil
 	}
@@ -168,7 +168,7 @@ type PublicKeyReply struct {
 }
 
 // GetCAPublicKey returns the public key of the trusted CA
-func (ca *Server) GetCAPublicKey(args struct{}, reply *PublicKeyReply) error {
+func (ca Server) GetCAPublicKey(args struct{}, reply *PublicKeyReply) error {
 	fmt.Print("get CA public key\n\n")
 	reply.CAPublicKey = ca.PublicKey
 	return nil

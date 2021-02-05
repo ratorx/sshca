@@ -19,12 +19,12 @@ type SignUserCmd struct {
 }
 
 // Validate implementation for Command
-func (s *SignUserCmd) Validate() error {
+func (s SignUserCmd) Validate() error {
 	return s.RPCFlags.Validate()
 }
 
 // Run implementation for Command
-func (s *SignUserCmd) Run() error {
+func (s SignUserCmd) Run() error {
 	client, err := s.RPCFlags.MakeClient()
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ type SignHostCmd struct {
 	Principals     CommaSeparatedList `arg:"-n" help:"extra principals for the host keys (comma-separated)"`
 }
 
-func (s *SignHostCmd) findPublicKeys() ([]string, error) {
+func (s SignHostCmd) findPublicKeys() ([]string, error) {
 	privateKeys, err := sshd.Lookup(s.SSHDConfigPath, "HostKey")
 	if err != nil {
 		return nil, fmt.Errorf("failed to find host keys for %w", err)
@@ -56,7 +56,7 @@ func (s *SignHostCmd) findPublicKeys() ([]string, error) {
 	return publicKeys, nil
 }
 
-func (s *SignHostCmd) getPrincipals() ([]string, error) {
+func (s SignHostCmd) getPrincipals() ([]string, error) {
 	hostname, err := fqdn.FqdnHostname()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get hostname: %w", err)
@@ -78,12 +78,12 @@ func (s *SignHostCmd) getPrincipals() ([]string, error) {
 }
 
 // Validate implementation for Command
-func (s *SignHostCmd) Validate() error {
+func (s SignHostCmd) Validate() error {
 	return s.RPCFlags.Validate()
 }
 
 // Run implementation for Command
-func (s *SignHostCmd) Run() error {
+func (s SignHostCmd) Run() error {
 	client, err := s.RPCFlags.MakeClient()
 	if err != nil {
 		return err
