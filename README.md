@@ -6,7 +6,7 @@ Problems I have with ssh-keygen + bash scripts and various other alternatives:
 * Ansible etc. are nice for idempotent file changes, but are large dependencies.
 * ssh-cert-authority etc. are quite complex and designed for scalability. I'm fine with manually verifying each certificate request, I just want to automate all the other bits.
 
-Go can generate a single static binary for multiple OSes that I can just `wget` and use. Integration with GitHub actions lets me automate building new binaries. TODO: Simpler distribution, because remembering version numbers is annoying.
+Go can generate a single static binary for multiple OSes that I can just `wget` and use. Integration with GitHub actions lets me automate building new binaries. Easy download URL: https://gh.ree.to/sshca.{platform}.{arch}.
 
 ## How does it work?
 
