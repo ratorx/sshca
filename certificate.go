@@ -46,6 +46,9 @@ func getCertificateIdentity(keyPath string, certType ca.CertificateType) (string
 	if err != nil {
 		return "", fmt.Errorf("failed to get system hostname: %w", err)
 	}
+	// Use short hostname for identity
+	// On OpenBSD os.Hostname returns the long hostname
+	hostname = strings.Split(hostname, ".")[0]
 	certIdentityComponents = append(certIdentityComponents, hostname)
 
 	// Append username if it's a user certificate
