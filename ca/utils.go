@@ -15,7 +15,7 @@ func runSSHKeygen(args []string) error {
 	fmt.Printf("ssh-keygen output:\n")
 	if err := cmd.Run(); err != nil {
 		// Unwrapping the error is possibly dangerous (might expect to keep using
-		// stderr after mutex is unlocked). Explicitly convert to string before
+		// stderr outside the critical section). Explicitly convert to string before
 		// returning. May not be strictly necessary, but I CBA to test and find out.
 		return fmt.Errorf("ssh-keygen failed: %s", err.Error())
 	}
