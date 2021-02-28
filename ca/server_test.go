@@ -110,7 +110,8 @@ func TestServerGetSSHKeygenArgs(t *testing.T) {
 	assert.Equal(t, append(args.Args(), "-s", "./testdata/test", "asdf"), server.getSSHKeygenArgs(args, "asdf"))
 }
 
-func getCertificateDetails(cert *PublicKey) ([]byte, error) {
+func getCertificateDetails(t *testing.T, cert *PublicKey) ([]byte, error) {
+	t.Helper()
 	cmd := exec.Command("ssh-keygen", "-L", "-f", "-")
 	buffer := bytes.Buffer{}
 	buffer.Write(cert.Data)
@@ -123,13 +124,12 @@ func TestServerSignPublicKey(t *testing.T) {
 	if err != nil {
 		t.Skipf("CLI dependency not found: %s", err)
 	}
-	t.Fail()
 	server, err := NewServer("./testdata/ca", "", true)
 	assert.Nil(t, err)
 	var reply SignReply
 	err = server.SignPublicKey(SignArgs{"asdf", HostCertificate, []string{"asdf"}, testPublicKey}, &reply)
 	assert.Nil(t, err)
-	details, err := getCertificateDetails(reply.Certificate)
+	details, err := getCertificateDetails(t, reply.Certificate)
 	assert.Nil(t, err)
 	assert.Equal(t, testCertDetails, details)
 }
