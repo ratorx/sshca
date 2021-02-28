@@ -9,9 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testPublicKey *PublicKey
-var testCertDetails []byte = []byte(
-`(stdin):1:
+var (
+	testPublicKey   *PublicKey
+	testCertDetails []byte = []byte(
+		`(stdin):1:
         Type: ssh-ed25519-cert-v01@openssh.com host certificate
         Public key: ED25519-CERT SHA256:nbtA2MPjSSVod4bmKFSZ60I2DOnD0AHXXnbsL5TTPt8
         Signing CA: RSA SHA256:h9xSScM9JGIUIa0BFF9XlcLCplH8mg1+DnMWh7AANjA (using rsa-sha2-512)
@@ -23,6 +24,7 @@ var testCertDetails []byte = []byte(
         Critical Options: (none)
         Extensions: (none)
 `,
+	)
 )
 
 func init() {

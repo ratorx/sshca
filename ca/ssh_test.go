@@ -7,9 +7,13 @@ import (
 )
 
 const testPublicKeyString string = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHwXYROIrAfv9RS4LyCPdsPGy6EqM+vncrrZXzVJbNuV john@doe\n"
+
 var testPublicKeyContents []byte = []byte(testPublicKeyString)
-const testPublicKeyFingerprint string = "SHA256:nbtA2MPjSSVod4bmKFSZ60I2DOnD0AHXXnbsL5TTPt8"
-const testPublicKeyType string = "ssh-ed25519"
+
+const (
+	testPublicKeyFingerprint string = "SHA256:nbtA2MPjSSVod4bmKFSZ60I2DOnD0AHXXnbsL5TTPt8"
+	testPublicKeyType        string = "ssh-ed25519"
+)
 
 func TestCertificateTypeString(t *testing.T) {
 	assert.Equal(t, "host", HostCertificate.String())

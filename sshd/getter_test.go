@@ -7,11 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const sshdConfigPath = "testdata/sshd_config"
-const invalidSSHDConfigPath = "testdata/invalid"
+const (
+	sshdConfigPath        = "testdata/sshd_config"
+	invalidSSHDConfigPath = "testdata/invalid"
+)
+
 var expectedHostKeys = []string{
-		MustFilepath("testdata/ssh_host_rsa_key"),
-		MustFilepath("testdata/ssh_host_ed25519_key"),
+	MustFilepath("testdata/ssh_host_rsa_key"),
+	MustFilepath("testdata/ssh_host_ed25519_key"),
 }
 
 func MustFilepath(path string) string {

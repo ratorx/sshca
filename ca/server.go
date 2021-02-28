@@ -96,6 +96,7 @@ func NewServer(privateKeyPath string, publicKeyPath string, skipConfirmation boo
 
 	return Server{privateKeyPath, publicKey, skipConfirmation, &sync.Mutex{}}, nil
 }
+
 // SignPublicKey takes a SSH public key and signing options and signs it with
 // ssh-keygen
 func (ca *Server) SignPublicKey(args SignArgs, reply *SignReply) error {

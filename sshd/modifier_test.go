@@ -67,7 +67,7 @@ func setupModifierTest(t *testing.T) string {
 	// create a basic valid SSHD config
 	// need to create at least one host key
 	tempKeyPath := filepath.Join(tempDir, "key")
-	err = ioutil.WriteFile(tempKeyPath, key, 0600)
+	err = ioutil.WriteFile(tempKeyPath, key, 0o600)
 	if err != nil {
 		t.Skipf("unable to create key at %s", tempKeyPath)
 	}
@@ -83,7 +83,7 @@ func setupModifierTest(t *testing.T) string {
 			},
 			[]byte("\n"),
 		),
-		0644,
+		0o644,
 	)
 	if err != nil {
 		t.Skipf("unable to create sshd_config at %s", tempConfigPath)
@@ -187,9 +187,9 @@ func TestModifierCommitWithInvalidFinalConfig(t *testing.T) {
 	// check the file has been reverted
 	finalContents, err := ioutil.ReadFile(configPath)
 	assert.Nil(t, err)
-	assert.Equal(t, 
-		initialContents, 
-		finalContents, 
+	assert.Equal(t,
+		initialContents,
+		finalContents,
 		"expect the file to have been unchanged",
 	)
 }
