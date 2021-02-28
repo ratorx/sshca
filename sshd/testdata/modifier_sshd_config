@@ -1,0 +1,5 @@
+AcceptEnv EXAMPLE
+Port 22
+UsePAM yes
+AddressFamily any
+ListenAddress [::]:22

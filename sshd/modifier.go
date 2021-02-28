@@ -8,11 +8,6 @@ import (
 	"regexp"
 )
 
-var hostkeyFailCases = [][]byte{
-	[]byte("No matching private key for certificate"),
-	[]byte("Could not load host certificate"),
-}
-
 // Represents a SSHD config modification. Replaces all matches of LineRegexp
 // with with the key value pair (in SSHD format). If no matches, it appends to
 // the end of the file.
@@ -41,16 +36,14 @@ type Modifier struct {
 }
 
 func (s Modifier) testConfig() error {
-	cmd := exec.Command("sshd", "-t")
+	cmd := exec.Command("sshd", "-t", "-f", s.ConfigPath)
 	_, stderr, err := checkedRun(cmd)
 	if err != nil {
 		return err
 	}
-	// Extra test cases - sshd -t returns 0 for these but they are problematic.
-	for _, failCase := range hostkeyFailCases {
-		if bytes.Contains(stderr, failCase) {
-			return fmt.Errorf("invalid hostkey in sshd config")
-		}
+	// Output on stderr indicates error, even when sshd -t returns 0
+	if len(stderr) != 0 {
+		return fmt.Errorf("warning from sshd -t:\n%s", stderr)
 	}
 	return nil
 }
@@ -107,9 +100,9 @@ func (s *Modifier) Commit() error {
 		err := ioutil.WriteFile(s.ConfigPath, original, 0o644)
 		if err != nil {
 			return fmt.Errorf(
-				"%v\n%v",
+				"%s\n%s",
 				cause.Error(),
-				fmt.Sprintf("failed to revert previous SSHD config (MANUAL FIX NEEDED): %v", err),
+				fmt.Sprintf("failed to revert previous SSHD config (MANUAL FIX NEEDED): %s", err),
 			)
 		}
 

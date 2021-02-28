@@ -1,0 +1,4 @@
+HostKey testdat/ssh_host_rsa_key
+HostKey testdata/ssh_host_ed25519_key
+
+UsePAM yes
